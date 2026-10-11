@@ -1,0 +1,2419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Checker — Institutional Evaluation System</title>
+  <style>
+    :root {
+      --bg-canvas: #F8FAFC;
+      --bg-surface: #FFFFFF;
+      --bg-subtle: #F1F5F9;
+      --border-subtle: #E2E8F0;
+      --border-strong: #CBD5E1;
+      --border-focus: #0284C7;
+
+      --text-main: #0F172A;
+      --text-secondary: #1E293B;
+      --text-muted: #64748B;
+      --text-light: #94A3B8;
+
+      --accent-blue: #0284C7;
+      --accent-blue-hover: #0369A1;
+      --accent-blue-light: #E0F2FE;
+      --accent-sky: #38BDF8;
+
+      --accent-emerald: #059669;
+      --accent-emerald-light: #D1FAE5;
+      --accent-mint: #34D399;
+
+      --accent-rose: #E11D48;
+      --accent-rose-light: #FFE4E6;
+      --accent-rose-soft: #F43F5E;
+
+      --accent-amber: #D97706;
+      --accent-amber-light: #FEF3C7;
+
+      --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.05);
+      --shadow-ambient: 0 4px 6px -1px rgba(15, 23, 42, 0.04), 0 20px 25px -5px rgba(15, 23, 42, 0.05);
+      --shadow-elevation: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 4px 10px -2px rgba(15, 23, 42, 0.03);
+      --shadow-glow: 0 0 0 3px rgba(56, 189, 248, 0.28);
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-full: 9999px;
+
+      --ease-luxury: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: #CBD5E1 #F1F5F9;
+    }
+
+    /* Custom Scrollbar Specification */
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #CBD5E1;
+      border-radius: var(--radius-full);
+      transition: background 0.25s var(--ease-luxury);
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-sky);
+    }
+
+    .urdu-font {
+      font-family: "Noto Nastaliq Urdu", "Arabic Typesetting", "Amiri", "Tahoma", serif;
+      direction: rtl;
+      unicode-bidi: embed;
+      font-size: 1.05rem !important;
+      line-height: 1.3;
+    }
+
+    /* Top Navigation Header */
+    .app-header {
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-subtle);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0.9rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand-cluster {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--accent-blue) 0%, #0369A1 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28);
+    }
+
+    .brand-title {
+      font-size: 1.22rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+    }
+
+    .brand-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: var(--radius-full);
+      background: var(--accent-blue-light);
+      color: var(--accent-blue);
+      border: 1px solid rgba(2, 132, 199, 0.2);
+    }
+
+    .workflow-stepper {
+      display: flex;
+      align-items: center;
+      background: #F1F5F9;
+      padding: 4px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+      gap: 3px;
+    }
+
+    .step-pill {
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: var(--radius-full);
+      color: var(--text-muted);
+      border: none;
+      background: transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.25s var(--ease-luxury);
+      cursor: pointer;
+    }
+
+    .step-pill.active {
+      background: #FFFFFF;
+      color: var(--accent-blue);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .step-pill.completed {
+      color: var(--accent-emerald);
+    }
+
+    .app-main {
+      flex: 1;
+      max-width: 1280px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Luxury Cards */
+    .luxury-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-ambient);
+      transition: all 0.25s var(--ease-luxury);
+      overflow: hidden;
+    }
+
+    .luxury-card-header {
+      padding: 1.5rem 1.75rem 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      background: linear-gradient(180deg, #FFFFFF 0%, #FAFCFE 100%);
+    }
+
+    .card-heading {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .card-subtext {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+
+    .luxury-card-body {
+      padding: 1.85rem;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.35rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .form-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .form-label .req {
+      color: var(--accent-rose);
+      font-weight: 800;
+    }
+
+    .form-input, .form-select {
+      width: 100%;
+      padding: 0.68rem 0.95rem;
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: var(--text-main);
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      transition: all 0.25s var(--ease-luxury);
+    }
+
+    .form-input:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--border-focus);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .info-badge-panel {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.68rem 1rem;
+      background: #F8FAFC;
+      border: 1.5px dashed var(--border-strong);
+      border-radius: var(--radius-md);
+    }
+
+    .info-badge-panel .meta-info {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .info-badge-panel .stat-tag {
+      background: var(--accent-blue-light);
+      color: var(--accent-blue);
+      font-weight: 800;
+      padding: 3px 10px;
+      border-radius: var(--radius-full);
+      font-size: 0.82rem;
+      border: 1px solid rgba(2, 132, 199, 0.25);
+    }
+
+    .segmented-control {
+      display: flex;
+      background: #F1F5F9;
+      padding: 4px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      gap: 4px;
+    }
+
+    .segmented-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 0.55rem 0.75rem;
+      font-size: 0.84rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-radius: calc(var(--radius-md) - 3px);
+      cursor: pointer;
+      transition: all 0.2s var(--ease-luxury);
+      text-align: center;
+      user-select: none;
+    }
+
+    .segmented-btn.active {
+      background: #FFFFFF;
+      color: var(--accent-blue);
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      font-weight: 600;
+      font-size: 0.88rem;
+      padding: 0.68rem 1.35rem;
+      border-radius: var(--radius-md);
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all 0.25s var(--ease-luxury);
+      user-select: none;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .btn:focus-visible {
+      outline: none;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, #0369A1 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #0369A1 0%, #075985 100%);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #FFFFFF;
+      color: var(--text-main);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .btn-secondary:hover {
+      background: #F8FAFC;
+      border-color: var(--border-strong);
+    }
+
+    .btn-emerald {
+      background: linear-gradient(135deg, var(--accent-emerald) 0%, #047857 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
+    }
+
+    .btn-emerald:hover {
+      background: linear-gradient(135deg, #047857 0%, #065F46 100%);
+      transform: translateY(-1px);
+    }
+
+    .btn-sm {
+      padding: 0.42rem 0.85rem;
+      font-size: 0.8rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+    }
+
+    .btn-ghost:hover {
+      background: #F1F5F9;
+      color: var(--text-main);
+    }
+
+    /* Matrix Controls */
+    .matrix-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.85rem;
+      background: #F8FAFC;
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0.95rem 1.75rem;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+    }
+
+    .matrix-pagination-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      padding: 0.85rem 1.75rem;
+      background: #FFFFFF;
+      border-bottom: 1px solid var(--border-subtle);
+      gap: 0.85rem;
+    }
+
+    .matrix-status-cluster {
+      display: flex;
+      align-items: center;
+      gap: 1.25rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .indicator-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .indicator-dot.blue { background: var(--accent-blue); }
+    .indicator-dot.emerald { background: var(--accent-emerald); }
+
+    .page-tab-strip {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      overflow-x: auto;
+      max-width: 100%;
+      padding-bottom: 2px;
+      scrollbar-width: thin;
+    }
+
+    .page-tab-btn {
+      padding: 0.38rem 0.85rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border-subtle);
+      background: #FFFFFF;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s var(--ease-luxury);
+      white-space: nowrap;
+    }
+
+    .page-tab-btn:hover {
+      background: #F8FAFC;
+      color: var(--text-main);
+    }
+
+    .page-tab-btn.active {
+      background: var(--accent-blue-light);
+      border-color: rgba(2, 132, 199, 0.4);
+      color: var(--accent-blue);
+    }
+
+    .matrix-viewport {
+      max-height: 560px;
+      overflow-y: auto;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .matrix-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      text-align: left;
+    }
+
+    .matrix-table th {
+      background: #F8FAFC;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 0.85rem 1.15rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .matrix-row {
+      transition: background-color 0.25s ease;
+    }
+    .matrix-row:nth-child(even) {
+      background-color: #FAFAFC;
+    }
+    .matrix-row:hover {
+      background-color: #F1F5F9;
+    }
+    .matrix-row td {
+      padding: 0.65rem 1.15rem;
+      border-bottom: 1px solid #EDF2F7;
+      vertical-align: middle;
+    }
+
+    .q-number-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 30px;
+      padding: 0 8px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-secondary);
+      background: #E2E8F0;
+      border-radius: var(--radius-sm);
+    }
+
+    .pill-selector-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #F1F5F9;
+      padding: 3px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .choice-pill {
+      min-width: 36px;
+      height: 32px;
+      padding: 0 10px;
+      border: 1px solid transparent;
+      background: #FFFFFF;
+      color: var(--text-secondary);
+      font-size: 0.84rem;
+      font-weight: 700;
+      border-radius: var(--radius-full);
+      cursor: pointer;
+      transition: all 0.2s var(--ease-luxury);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: var(--shadow-sm);
+      user-select: none;
+    }
+
+    .choice-pill:hover {
+      background: #E2E8F0;
+      color: var(--text-main);
+    }
+
+    .key-group .choice-pill.selected {
+      background: linear-gradient(135deg, var(--accent-blue) 0%, #0369A1 100%);
+      color: #FFFFFF;
+      box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+    }
+
+    .student-group .choice-pill.selected {
+      background: linear-gradient(135deg, var(--accent-emerald) 0%, #047857 100%);
+      color: #FFFFFF;
+      box-shadow: 0 2px 8px rgba(5, 150, 105, 0.4);
+    }
+
+    .skip-choice-pill {
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 0 11px;
+      height: 32px;
+      border-radius: var(--radius-full);
+      border: none;
+      background: #E2E8F0;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s var(--ease-luxury);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .skip-choice-pill.selected {
+      background: #94A3B8;
+      color: #FFFFFF;
+      box-shadow: 0 2px 6px rgba(100, 116, 139, 0.35);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { background-color: #FFF1F2; }
+      50% { background-color: #FEE2E2; }
+    }
+
+    .missing-key-row {
+      border-left: 4px solid var(--accent-rose) !important;
+      animation: pulseGlow 1.2s infinite ease-in-out;
+    }
+
+    /* Executive Analytics Dashboard */
+    .analytics-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.25s var(--ease-luxury);
+    }
+
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-ambient);
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--border-subtle);
+    }
+    .stat-card.accent-blue::before { background: var(--accent-blue); }
+    .stat-card.accent-emerald::before { background: var(--accent-emerald); }
+    .stat-card.accent-rose::before { background: var(--accent-rose); }
+    .stat-card.accent-amber::before { background: var(--accent-amber); }
+
+    .stat-card-label {
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-card-value {
+      font-size: 2.15rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-main);
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+
+    .stat-card-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.35rem;
+      font-weight: 500;
+    }
+
+    .analytics-banner {
+      display: flex;
+      align-items: center;
+      gap: 1.75rem;
+      padding: 1.75rem;
+      background: #FFFFFF;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 2rem;
+      box-shadow: var(--shadow-ambient);
+    }
+
+    .radial-chart-svg {
+      width: 125px;
+      height: 125px;
+      transform: rotate(-90deg);
+      flex-shrink: 0;
+    }
+
+    .chart-track {
+      fill: none;
+      stroke: #E2E8F0;
+      stroke-width: 2.8;
+    }
+
+    .chart-progress {
+      fill: none;
+      stroke-width: 2.8;
+      stroke-linecap: round;
+      stroke: var(--accent-emerald);
+      transition: stroke-dasharray 1s var(--ease-luxury), stroke 0.3s ease;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0.38rem 1.1rem;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+      font-size: 0.84rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .status-badge.passed {
+      background: var(--accent-emerald-light);
+      color: var(--accent-emerald);
+      border: 1px solid rgba(5, 150, 105, 0.3);
+    }
+
+    .status-badge.failed {
+      background: var(--accent-rose-light);
+      color: var(--accent-rose);
+      border: 1px solid rgba(225, 29, 72, 0.3);
+    }
+
+    .audit-filter-bar {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .filter-pill-btn {
+      padding: 0.45rem 1rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border-subtle);
+      background: #FFFFFF;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s var(--ease-luxury);
+    }
+
+    .filter-pill-btn:hover {
+      background: #F8FAFC;
+      color: var(--text-main);
+    }
+
+    .filter-pill-btn.active {
+      background: var(--text-main);
+      color: #FFFFFF;
+      border-color: var(--text-main);
+    }
+
+    .audit-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 9px;
+      border-radius: var(--radius-sm);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .audit-tag.correct { background: var(--accent-emerald-light); color: var(--accent-emerald); }
+    .audit-tag.incorrect { background: var(--accent-rose-light); color: var(--accent-rose); }
+    .audit-tag.unattempted { background: #F1F5F9; color: var(--text-muted); }
+
+    /* Batch Paste Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #FFFFFF;
+      border-radius: var(--radius-lg);
+      max-width: 560px;
+      width: 100%;
+      box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.25);
+      border: 1px solid var(--border-subtle);
+      overflow: hidden;
+    }
+
+    .modal-header {
+      padding: 1.25rem 1.75rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-body {
+      padding: 1.75rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.75rem;
+      background: #F8FAFC;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+    }
+
+    /* Floating Toast Alerts */
+    .toast-tray {
+      position: fixed;
+      bottom: 1.75rem;
+      right: 1.75rem;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      pointer-events: none;
+    }
+
+    .toast-msg {
+      pointer-events: auto;
+      padding: 0.8rem 1.25rem;
+      background: #0F172A;
+      color: #FFFFFF;
+      font-size: 0.85rem;
+      font-weight: 500;
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-elevation);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Screen display of Printable Card is hidden by default */
+    #printable-report-card {
+      display: none;
+    }
+
+    @media print {
+      @page {
+        size: landscape;
+        margin: 4mm 6mm !important;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+
+      html, body {
+        height: 100% !important;
+        max-height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif !important;
+      }
+
+      /* Hide all on-screen UI components */
+      .no-print, header, nav, form, .luxury-card, .matrix-toolbar, .action-toolbar, .toast-tray, .modal-overlay, #stage1Card, #stage2Card, #stage3Card, button {
+        display: none !important;
+      }
+
+      /* Single-Page A4 Landscape Strict Container */
+      #printable-report-card {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        height: 98vh !important;
+        max-height: 98vh !important;
+        box-sizing: border-box !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        overflow: hidden !important;
+      }
+
+      .print-header {
+        border-bottom: 1.2px solid #0F172A;
+        padding-bottom: 1mm;
+        margin: 0 0 1.2mm 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-shrink: 0;
+      }
+
+      .print-title {
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        color: #0F172A;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .print-subtitle {
+        font-size: 7px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+
+      .print-meta-strip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 4px;
+        padding: 1.5px 5px;
+        font-size: 7.5px;
+        border: 0.8px solid #CBD5E1;
+        border-radius: 4px;
+        background: #F8FAFC !important;
+        margin: 0 0 1.2mm 0;
+        flex-shrink: 0;
+        line-height: 1.2;
+      }
+
+      .print-meta-item {
+        white-space: nowrap;
+      }
+
+      .print-meta-item strong {
+        color: #1E293B;
+        font-weight: 700;
+      }
+
+      .print-metric-ribbon {
+        display: grid;
+        grid-template-columns: repeat(11, 1fr);
+        gap: 1.5px;
+        padding: 2px 4px;
+        border: 0.8px solid #CBD5E1;
+        border-radius: 4px;
+        background: #FFFFFF !important;
+        margin: 0 0 1.2mm 0;
+        flex-shrink: 0;
+      }
+
+      .pm-cell {
+        text-align: center;
+        border-right: 0.5px solid #E2E8F0;
+        padding: 0.5px 1px;
+      }
+      .pm-cell:last-child {
+        border-right: none;
+      }
+
+      .pm-cell .lbl {
+        font-size: 6px;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #64748B;
+        line-height: 1;
+      }
+
+      .pm-cell .val {
+        font-size: 8.5px;
+        font-weight: 800;
+        color: #0F172A;
+        line-height: 1.1;
+        margin-top: 1px;
+      }
+
+      .print-matrix-wrapper {
+        flex: 1 1 auto;
+        overflow: hidden !important;
+        display: flex;
+        align-items: stretch;
+        margin: 0 0 1mm 0;
+      }
+
+      .print-matrix-grid {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        gap: 1px 3px;
+        align-content: stretch;
+      }
+
+      .print-column-table {
+        width: 100%;
+        height: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+
+      .print-column-table th {
+        background: #F1F5F9 !important;
+        border: 0.5px solid #CBD5E1;
+        font-weight: 800;
+        text-align: center;
+        text-transform: uppercase;
+        overflow: hidden;
+      }
+
+      .print-column-table td {
+        border: 0.5px solid #E2E8F0;
+        text-align: center;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+
+      .print-column-table tr.pr-pass { background-color: #F0FDF4 !important; font-weight: 600; }
+      .print-column-table tr.pr-fail { background-color: #FFF1F2 !important; }
+      .print-column-table tr.pr-skip { background-color: #FAFAFA !important; color: #94A3B8; }
+
+      .print-auth-footer {
+        margin-top: auto;
+        padding-top: 1.2mm;
+        border-top: 1px solid #CBD5E1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 7px;
+        color: #334155;
+        flex-shrink: 0;
+        line-height: 1.1;
+      }
+
+      .print-sig-block {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .print-sig-line {
+        display: inline-block;
+        width: 110px;
+        border-bottom: 0.8px dashed #64748B;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-inner">
+    <div class="brand-cluster" onclick="navigateToStage(1);">
+      <div class="brand-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 11 12 14 22 4"></polyline>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">
+          Test Checker
+          <span class="brand-badge">LANDSCAPE EDITION</span>
+        </h1>
+      </div>
+    </div>
+
+    <nav class="workflow-stepper">
+      <button type="button" class="step-pill active" id="stepper1" onclick="navigateToStage(1)"><span>1</span> Setup</button>
+      <button type="button" class="step-pill" id="stepper2" onclick="navigateToStage(2)"><span>2</span> Marking Grid</button>
+      <button type="button" class="step-pill" id="stepper3" onclick="navigateToStage(3)"><span>3</span> Evaluation &amp; Audit</button>
+    </nav>
+  </div>
+</header>
+
+<main class="app-main">
+
+  <section id="stage1Card" class="luxury-card">
+    <div class="luxury-card-header">
+      <div>
+        <h2 class="card-heading">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="var(--accent-blue)">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          Stage 1: Test Setup &amp; Configuration
+        </h2>
+        <p class="card-subtext">Configure assessment metadata, scheme sets, and scoring parameters.</p>
+      </div>
+      <div>
+        <button type="button" class="btn btn-secondary btn-sm" id="btnLoadDemoSetup">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          Populate Demo Values
+        </button>
+      </div>
+    </div>
+
+    <form id="setupConfigForm" class="luxury-card-body" onsubmit="event.preventDefault(); processSetupForm();">
+      <!-- Section A: Metadata -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="cfgTestTitle">Test Title / Subject <span class="req">*</span></label>
+          <input type="text" id="cfgTestTitle" class="form-input" placeholder="e.g. Cambridge A-Level Advanced Physics" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cfgCandidateName">Candidate / Student Name <span class="req">*</span></label>
+          <input type="text" id="cfgCandidateName" class="form-input" placeholder="e.g. Sophia Montgomery" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cfgRollNo">Roll Number / Candidate ID</label>
+          <input type="text" id="cfgRollNo" class="form-input" placeholder="e.g. PHY-2026-9810">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cfgDate">Examination Date <span class="req">*</span></label>
+          <input type="date" id="cfgDate" class="form-input" required>
+        </div>
+      </div>
+
+      <!-- Section B: Schemes & Counts -->
+      <div style="margin-top: 1.5rem;" class="form-grid">
+        <div class="form-group">
+          <label class="form-label" for="cfgTotalMCQs">Total Number of MCQs (1 to 500) <span class="req">*</span></label>
+          <input type="number" id="cfgTotalMCQs" class="form-input" min="1" max="500" value="50" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Option Scheme Count</label>
+          <div class="segmented-control" id="optionCountToggle">
+            <button type="button" class="segmented-btn active" data-count="4">4 Options</button>
+            <button type="button" class="segmented-btn" data-count="5">5 Options</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cfgCharset">Option Character Set</label>
+          <select id="cfgCharset" class="form-select">
+            <option value="english">English Alphabet (A, B, C, D...)</option>
+            <option value="urdu">Urdu / Arabic Script (الف, ب, ج, د...)</option>
+            <option value="numerical">Numerical Indices (1, 2, 3, 4...)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Section C: Scoring Parameters (Fixed 1 Mark/Q) -->
+      <div style="margin-top: 1.5rem;" class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Marks Per Question &amp; Max Marks</label>
+          <div class="info-badge-panel">
+            <div class="meta-info">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="var(--accent-blue)">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 16v-4"></path>
+                <path d="M12 8h.01"></path>
+              </svg>
+              <span>Fixed: <strong>1 Mark</strong> per Question</span>
+            </div>
+            <div class="stat-tag" id="badgeMaxMarksDisplay">Total Max: 50 Marks</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cfgNegativeMarks">Negative Marking Penalty per Incorrect MCQ</label>
+          <input type="number" id="cfgNegativeMarks" class="form-input" step="0.05" min="0" placeholder="0" value="0.25">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="cfgPassThreshold">Passing Percentage Threshold (%)</label>
+          <input type="number" id="cfgPassThreshold" class="form-input" step="1" min="1" max="100" value="50" required>
+        </div>
+      </div>
+
+      <div style="margin-top: 2rem; display: flex; justify-content: flex-end;">
+        <button type="submit" class="btn btn-primary" style="padding: 0.8rem 2.2rem;">
+          Generate Marking Matrix
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section id="stage2Card" class="luxury-card" style="display: none;">
+    <div class="luxury-card-header">
+      <div>
+        <h2 class="card-heading">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" color="var(--accent-blue)">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="3" y1="9" x2="21" y2="9"></line>
+            <line x1="9" y1="21" x2="9" y2="9"></line>
+          </svg>
+          Stage 2: Dual Marking Matrix
+        </h2>
+        <p class="card-subtext" id="matrixSubtitle">Populate official answer keys and candidate responses.</p>
+      </div>
+      <div style="display: flex; gap: 0.6rem;">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="navigateToStage(1)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          Back to Setup
+        </button>
+        <button type="button" class="btn btn-emerald btn-sm" onclick="triggerEvaluation()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+          Evaluate Test Now
+        </button>
+      </div>
+    </div>
+
+    <!-- Accelerators Toolbar -->
+    <div class="matrix-toolbar">
+      <div class="toolbar-actions">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="openBatchModal('key')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+          Paste Official Key
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="openBatchModal('student')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7.5" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+          Paste Candidate Answers
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="markRemainingUnattempted()">
+          Mark Remaining Skipped
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="simulateRealisticResponses()">
+          Demo / Mock Fill
+        </button>
+      </div>
+      <div>
+        <button type="button" class="btn btn-ghost btn-sm" style="color: var(--accent-rose);" onclick="clearMarkingGrid()">
+          Clear All Selections
+        </button>
+      </div>
+    </div>
+
+    <!-- Segmented Pagination Bar -->
+    <div class="matrix-pagination-bar">
+      <div class="matrix-status-cluster">
+        <div class="status-item">
+          <span class="indicator-dot blue"></span>
+          <span>Official Keys: <strong id="lblKeysCount">0</strong>/<span class="lblTotalQs">50</span></span>
+        </div>
+        <div class="status-item">
+          <span class="indicator-dot emerald"></span>
+          <span>Attempted: <strong id="lblAttemptedCount">0</strong>/<span class="lblTotalQs">50</span></span>
+        </div>
+      </div>
+      <div class="page-tab-strip" id="pageTabStrip"></div>
+    </div>
+
+    <!-- Matrix Viewport -->
+    <div class="matrix-viewport">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th style="width: 75px; text-align: center;">Q#</th>
+            <th style="width: 45%;">Official Answer Key</th>
+            <th style="width: 45%;">Candidate's Marked Response</th>
+          </tr>
+        </thead>
+        <tbody id="matrixTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="luxury-card-header" style="background: #F8FAFC; border-top: 1px solid var(--border-subtle); justify-content: flex-end;">
+      <button type="button" class="btn btn-emerald" onclick="triggerEvaluation()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        Evaluate Test &amp; Compute Analytics
+      </button>
+    </div>
+  </section>
+
+  <section id="stage3Card" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <h2 style="font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;">Executive Performance Dashboard</h2>
+        <p style="color: var(--text-muted); font-size: 0.88rem;" id="analyticsSubtitle">Candidate Evaluation Summary</p>
+      </div>
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="btn btn-secondary" onclick="navigateToStage(2)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+          Back to Marking Grid
+        </button>
+        <button type="button" class="btn btn-primary" onclick="launchPrintReport()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          Print Landscape Report Card
+        </button>
+      </div>
+    </div>
+
+    <!-- Progress Ring & Outcome Banner -->
+    <div class="analytics-banner">
+      <svg class="radial-chart-svg" viewBox="0 0 36 36">
+        <path class="chart-track"
+          d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+        />
+        <path id="svgProgressPath" class="chart-progress"
+          stroke-dasharray="0, 100"
+          d="M18 2.0845
+            a 15.9155 15.9155 0 0 1 0 31.831
+            a 15.9155 15.9155 0 0 1 0 -31.831"
+        />
+      </svg>
+      <div style="flex: 1;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+          <span id="badgeOutcome" class="status-badge passed">PASSED</span>
+          <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);" id="lblThresholdBadge">Passing Threshold: 50%</span>
+        </div>
+        <div style="font-size: 2.2rem; font-weight: 800; color: var(--text-main);" id="lblNetPercentValue">0.0%</div>
+        <p style="color: var(--text-muted); font-size: 0.88rem;" id="lblScoreEquation">Obtained 0.00 / 50 marks (Negative Deductions: 0.00)</p>
+      </div>
+    </div>
+
+    <!-- Executive Stat Cards -->
+    <div class="analytics-metrics-grid">
+      <div class="stat-card accent-blue">
+        <div class="stat-card-label">Marks Obtained / Total</div>
+        <div class="stat-card-value" id="cardValMarks">0.00 <span style="font-size: 1.1rem; color: var(--text-muted); font-weight: 500;">/ 50</span></div>
+        <div class="stat-card-meta" id="cardMetaTotalMarks">Total Marks: 50</div>
+      </div>
+
+      <div class="stat-card accent-emerald">
+        <div class="stat-card-label">Correct Answers</div>
+        <div class="stat-card-value" style="color: var(--accent-emerald);" id="cardValCorrect">0</div>
+        <div class="stat-card-meta" id="cardMetaAccuracy">Accuracy: 0%</div>
+      </div>
+
+      <div class="stat-card accent-rose">
+        <div class="stat-card-label">Incorrect Answers</div>
+        <div class="stat-card-value" style="color: var(--accent-rose);" id="cardValIncorrect">0</div>
+        <div class="stat-card-meta" id="cardMetaDeductions">Negative Deductions: -0.00</div>
+      </div>
+
+      <div class="stat-card accent-amber">
+        <div class="stat-card-label">Unattempted / Skipped</div>
+        <div class="stat-card-value" style="color: var(--accent-amber);" id="cardValSkipped">0</div>
+        <div class="stat-card-meta" id="cardMetaAttempt">Attempt Rate: 0%</div>
+      </div>
+    </div>
+
+    <!-- Interactive Audit Table with Sticky Header -->
+    <div class="luxury-card">
+      <div class="luxury-card-header">
+        <div>
+          <h3 class="card-heading">Question-by-Question Item Audit</h3>
+          <p class="card-subtext">Itemized breakdown comparing official keys with student choices.</p>
+        </div>
+        <div class="audit-filter-bar">
+          <button type="button" class="filter-pill-btn active" data-filter="all" onclick="setAuditFilter('all')">All Questions</button>
+          <button type="button" class="filter-pill-btn" data-filter="correct" onclick="setAuditFilter('correct')">Correct Only</button>
+          <button type="button" class="filter-pill-btn" data-filter="incorrect" onclick="setAuditFilter('incorrect')">Incorrect Only</button>
+          <button type="button" class="filter-pill-btn" data-filter="unattempted" onclick="setAuditFilter('unattempted')">Unattempted Only</button>
+        </div>
+      </div>
+
+      <div class="matrix-viewport" style="max-height: 480px;">
+        <table class="matrix-table" style="font-size: 0.88rem;">
+          <thead>
+            <tr>
+              <th style="width: 75px; text-align: center;">Q#</th>
+              <th style="text-align: center; width: 140px;">Official Key</th>
+              <th style="text-align: center; width: 150px;">Candidate Choice</th>
+              <th style="text-align: center; width: 150px;">Evaluation</th>
+              <th style="text-align: center; width: 140px;">Marks Delta</th>
+            </tr>
+          </thead>
+          <tbody id="auditTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Batch Paste Modal -->
+<div class="modal-overlay" id="batchEntryModal">
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 style="font-size: 1.1rem; font-weight: 700;" id="batchModalTitle">Bulk Paste Answers</h3>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="closeBatchModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.85rem;" id="batchModalInstructions">
+        Paste a contiguous character sequence (e.g. <code>ABCDABCA...</code>) or values separated by commas, spaces, or tabs.
+      </p>
+      <div class="form-group">
+        <textarea id="batchInputText" class="form-input" rows="7" style="font-family: monospace; font-size: 1rem; resize: vertical;" placeholder="Paste string here... e.g. A B C D A B C..."></textarea>
+      </div>
+      <div style="display: flex; gap: 0.5rem; margin-top: 0.6rem;">
+        <button type="button" class="btn btn-ghost btn-sm" onclick="fillSequentialPattern()">Fill Repeating Pattern</button>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-secondary" onclick="closeBatchModal()">Cancel</button>
+      <button type="button" class="btn btn-primary" onclick="applyBatchText()">Apply Answers</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-tray" id="toastTray"></div>
+
+<div id="printable-report-card">
+  <!-- Landscape Top Bar -->
+  <div class="print-header">
+    <div class="print-title">
+      OFFICIAL EXAMINATION SCORECARD &amp; PERFORMANCE AUDIT
+      <span style="font-size: 8px; background: #0284C7; color: #FFFFFF; padding: 1px 5px; border-radius: 3px;">VERIFIED TRANSCRIPT</span>
+    </div>
+    <div style="text-align: right;">
+      <div class="print-subtitle">Institutional Assessment &amp; Optical Scoring Engine</div>
+    </div>
+  </div>
+
+  <!-- Horizontal Metadata Strip -->
+  <div class="print-meta-strip">
+    <div class="print-meta-item"><strong>Candidate:</strong> <span id="pRepStudent">—</span></div>
+    <div class="print-meta-item"><strong>Roll #:</strong> <span id="pRepRollNo">—</span></div>
+    <div class="print-meta-item"><strong>Subject/Test:</strong> <span id="pRepTitle">—</span></div>
+    <div class="print-meta-item"><strong>Exam Date:</strong> <span id="pRepDate">—</span></div>
+    <div class="print-meta-item"><strong>Marking Scheme:</strong> <span>Fixed: 1 Mark/Q</span></div>
+    <div class="print-meta-item"><strong>Auth Ref:</strong> <span id="pRepVerificationCode" style="color: #0284C7; font-weight: 700;">—</span></div>
+  </div>
+
+  <!-- 11-Cell Horizontal Metric Ribbon -->
+  <div class="print-metric-ribbon">
+    <div class="pm-cell">
+      <div class="lbl">Total MCQs</div>
+      <div class="val" id="pRepTotalQ">0</div>
+    </div>
+    <div class="pm-cell">
+      <div class="lbl">Attempted</div>
+      <div class="val" id="pRepAttempted">0</div>
+    </div>
+    <div class="pm-cell">
+      <div class="lbl">Correct</div>
+      <div class="val" id="pRepCorrect" style="color: #059669;">0</div>
+    </div>
+    <div class="pm-cell">
+      <div class="lbl">Incorrect</div>
+      <div class="val" id="pRepIncorrect" style="color: #E11D48;">0</div>
+    </div>
+    <div class="pm-cell">
+      <div class="lbl">Unattempted</div>
+      <div class="val" id="pRepSkipped">0</div>
+    </div>
+    <div class="pm-cell">
+      <div class="lbl">Accuracy</div>
+      <div class="val" id="pRepAccuracy">0%</div>
+    </div>
+    <div class="pm-cell">
+      <div class="lbl">Max Marks</div>
+      <div class="val" id="pRepMaxMarks">0</div>
+    </div>
+    <div class="pm-cell">
+      <div class="lbl">Obtained</div>
+      <div class="val" id="pRepMarksObtained" style="color: #0284C7;">0.00</div>
+    </div>
+    <div class="pm-cell">
+      <div class="lbl">Deductions</div>
+      <div class="val" id="pRepDeductions" style="color: #E11D48;">0.00</div>
+    </div>
+    <div class="pm-cell">
+      <div class="lbl">Final %</div>
+      <div class="val" id="pRepNetPercent">0.0%</div>
+    </div>
+    <div class="pm-cell">
+      <div class="lbl">Status</div>
+      <div class="val" id="pRepStatus" style="color: #059669;">PASSED</div>
+    </div>
+  </div>
+
+  <!-- Auto-Scaling Landscape Question Micro-Matrix Wrapper -->
+  <div class="print-matrix-wrapper">
+    <div class="print-matrix-grid" id="printMatrixGrid"></div>
+  </div>
+
+  <!-- Landscape Verification Horizon Footer -->
+  <div class="print-auth-footer">
+    <div class="print-sig-block">
+      <span>Candidate Signature:</span>
+      <span class="print-sig-line"></span>
+    </div>
+    <div style="text-align: center; color: #64748B;">
+      Generated on: <span id="pRepFooterTimestamp"></span> | Test Checker Verification Engine
+    </div>
+    <div class="print-sig-block">
+      <span>Evaluator Signature:</span>
+      <span class="print-sig-line"></span>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCHEMES = {
+  english: {
+    4: ['A', 'B', 'C', 'D'],
+    5: ['A', 'B', 'C', 'D', 'E']
+  },
+  urdu: {
+    4: ['الف', 'ب', 'ج', 'د'],
+    5: ['الف', 'ب', 'ج', 'د', 'ہ']
+  },
+  numerical: {
+    4: ['1', '2', '3', '4'],
+    5: ['1', '2', '3', '4', '5']
+  }
+};
+
+const appState = {
+  stage: 1,
+  config: {
+    title: '',
+    candidate: '',
+    rollNo: '',
+    date: '',
+    totalMCQs: 50,
+    optionCount: 4,
+    charset: 'english',
+    marksPerQ: 1.0,
+    negativeMarks: 0.25,
+    passThreshold: 50
+  },
+  currentPage: 1,
+  pageSize: 25,
+  officialKeys: {},
+  studentAnswers: {},
+  evaluation: null,
+  activeFilter: 'all',
+  batchMode: 'key'
+};
+
+function showNotification(msg, type = 'info') {
+  const tray = document.getElementById('toastTray');
+  const toast = document.createElement('div');
+  toast.className = 'toast-msg';
+
+  let icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>';
+  if (type === 'success') {
+    icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+  } else if (type === 'error') {
+    icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F43F5E" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>';
+  }
+
+  toast.innerHTML = `${icon} <span>${msg}</span>`;
+  tray.appendChild(toast);
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateY(8px)';
+    toast.style.transition = 'all 0.25s var(--ease-luxury)';
+    setTimeout(() => toast.remove(), 260);
+  }, 3200);
+}
+
+function getOptionsForScheme() {
+  const set = SCHEMES[appState.config.charset] || SCHEMES.english;
+  return set[appState.config.optionCount] || set[4];
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Populate current date
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('cfgDate').value = today;
+
+  // Segmented option toggle with automatic 5th option pruning safeguard
+  const countButtons = document.querySelectorAll('#optionCountToggle .segmented-btn');
+  countButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetCount = parseInt(btn.getAttribute('data-count'), 10);
+      if (appState.config.optionCount === targetCount) return;
+
+      countButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      appState.config.optionCount = targetCount;
+
+      // If dropped from 5 to 4, prune any stored 5th-option selection
+      if (targetCount === 4) {
+        const allowed = getOptionsForScheme();
+        let prunedKeys = 0;
+        let prunedStudent = 0;
+
+        for (const [q, val] of Object.entries(appState.officialKeys)) {
+          if (!allowed.includes(val)) {
+            delete appState.officialKeys[q];
+            prunedKeys++;
+          }
+        }
+        for (const [q, val] of Object.entries(appState.studentAnswers)) {
+          if (val !== 'SKIP' && !allowed.includes(val)) {
+            delete appState.studentAnswers[q];
+            prunedStudent++;
+          }
+        }
+        if (prunedKeys > 0 || prunedStudent > 0) {
+          showNotification(`Pruned 5th-option choices: ${prunedKeys} key(s), ${prunedStudent} candidate response(s)`, 'info');
+        }
+      }
+
+      renderMatrixRows();
+      refreshStatusLabels();
+    });
+  });
+
+  // Reactive badge update: Total Maximum Marks = Total MCQs (fixed 1 mark each)
+  const inputTotalMCQs = document.getElementById('cfgTotalMCQs');
+  const badgeMaxMarks = document.getElementById('badgeMaxMarksDisplay');
+
+  const updateTotalBadge = () => {
+    const mcqs = parseInt(inputTotalMCQs.value, 10) || 0;
+    badgeMaxMarks.textContent = `Total Max: ${mcqs} Marks`;
+  };
+
+  inputTotalMCQs.addEventListener('input', updateTotalBadge);
+
+  // Demo fill button for setup stage
+  document.getElementById('btnLoadDemoSetup').addEventListener('click', () => {
+    document.getElementById('cfgTestTitle').value = 'National Advanced Physics Assessment';
+    document.getElementById('cfgCandidateName').value = 'Sophia Montgomery';
+    document.getElementById('cfgRollNo').value = 'NA-2026-8840';
+    document.getElementById('cfgTotalMCQs').value = '50';
+    document.getElementById('cfgNegativeMarks').value = '0.25';
+    document.getElementById('cfgPassThreshold').value = '50';
+    updateTotalBadge();
+    showNotification('Sample demo parameters loaded', 'success');
+  });
+});
+
+function processSetupForm() {
+  const title = document.getElementById('cfgTestTitle').value.trim();
+  const candidate = document.getElementById('cfgCandidateName').value.trim();
+  const rollNo = document.getElementById('cfgRollNo').value.trim();
+  const date = document.getElementById('cfgDate').value;
+  const totalMCQs = parseInt(document.getElementById('cfgTotalMCQs').value, 10);
+  const charset = document.getElementById('cfgCharset').value;
+  
+  const rawNegative = document.getElementById('cfgNegativeMarks').value.trim();
+  const negativeMarks = rawNegative === '' ? 0.0 : (parseFloat(rawNegative) || 0.0);
+  
+  const passThreshold = parseFloat(document.getElementById('cfgPassThreshold').value) || 50;
+
+  if (!title) {
+    showNotification('Test Title is compulsory', 'error');
+    return;
+  }
+  if (!candidate) {
+    showNotification('Candidate Name is compulsory', 'error');
+    return;
+  }
+  if (isNaN(totalMCQs) || totalMCQs < 1 || totalMCQs > 500) {
+    showNotification('Total MCQs must be between 1 and 500', 'error');
+    return;
+  }
+
+  appState.config = {
+    title,
+    candidate,
+    rollNo: rollNo || 'N/A',
+    date,
+    totalMCQs,
+    optionCount: appState.config.optionCount,
+    charset,
+    marksPerQ: 1.0,
+    negativeMarks,
+    passThreshold
+  };
+
+  // Dynamic pagination chunking
+  if (totalMCQs <= 30) appState.pageSize = 30;
+  else if (totalMCQs <= 100) appState.pageSize = 25;
+  else appState.pageSize = 50;
+
+  appState.currentPage = 1;
+
+  navigateToStage(2);
+  renderPaginationStrip();
+  renderMatrixRows();
+  refreshStatusLabels();
+  showNotification(`Generated marking matrix for ${totalMCQs} questions`, 'success');
+}
+
+function navigateToStage(stageNum) {
+  if (stageNum > 1 && !appState.config.title && !appState.config.candidate) {
+    showNotification('Please configure assessment setup first', 'info');
+    stageNum = 1;
+  }
+
+  if (stageNum === 3 && !appState.evaluation) {
+    showNotification('Please evaluate test to view dashboard', 'info');
+    return;
+  }
+
+  appState.stage = stageNum;
+
+  document.getElementById('stage1Card').style.display = stageNum === 1 ? 'block' : 'none';
+  document.getElementById('stage2Card').style.display = stageNum === 2 ? 'block' : 'none';
+  document.getElementById('stage3Card').style.display = stageNum === 3 ? 'block' : 'none';
+
+  const s1 = document.getElementById('stepper1');
+  const s2 = document.getElementById('stepper2');
+  const s3 = document.getElementById('stepper3');
+
+  [s1, s2, s3].forEach(s => s.className = 'step-pill');
+
+  if (stageNum === 1) {
+    s1.classList.add('active');
+  } else if (stageNum === 2) {
+    s1.classList.add('completed');
+    s2.classList.add('active');
+    renderPaginationStrip();
+    renderMatrixRows();
+    refreshStatusLabels();
+  } else if (stageNum === 3) {
+    s1.classList.add('completed');
+    s2.classList.add('completed');
+    s3.classList.add('active');
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function renderPaginationStrip() {
+  const container = document.getElementById('pageTabStrip');
+  container.innerHTML = '';
+
+  const totalPages = Math.ceil(appState.config.totalMCQs / appState.pageSize);
+  if (totalPages <= 1) {
+    container.style.display = 'none';
+    return;
+  }
+  container.style.display = 'flex';
+
+  for (let i = 1; i <= totalPages; i++) {
+    const startQ = (i - 1) * appState.pageSize + 1;
+    const endQ = Math.min(i * appState.pageSize, appState.config.totalMCQs);
+    const tab = document.createElement('button');
+    tab.className = `page-tab-btn ${i === appState.currentPage ? 'active' : ''}`;
+    tab.textContent = `Q ${startQ}–${endQ}`;
+    tab.addEventListener('click', () => {
+      appState.currentPage = i;
+      renderPaginationStrip();
+      renderMatrixRows();
+    });
+    container.appendChild(tab);
+  }
+}
+
+function renderMatrixRows() {
+  const tbody = document.getElementById('matrixTableBody');
+  tbody.innerHTML = '';
+
+  const options = getOptionsForScheme();
+  const isUrdu = appState.config.charset === 'urdu';
+  const startIdx = (appState.currentPage - 1) * appState.pageSize + 1;
+  const endIdx = Math.min(appState.currentPage * appState.pageSize, appState.config.totalMCQs);
+
+  document.getElementById('matrixSubtitle').textContent = 
+    `${appState.config.title} • Questions ${startIdx} to ${endIdx} of ${appState.config.totalMCQs}`;
+
+  document.querySelectorAll('.lblTotalQs').forEach(el => el.textContent = appState.config.totalMCQs);
+
+  for (let q = startIdx; q <= endIdx; q++) {
+    const tr = document.createElement('tr');
+    tr.className = 'matrix-row';
+    tr.id = `row-item-${q}`;
+
+    // Question # Cell
+    const tdQ = document.createElement('td');
+    tdQ.style.textAlign = 'center';
+    tdQ.innerHTML = `<span class="q-number-badge">${q}</span>`;
+    tr.appendChild(tdQ);
+
+    // Official Answer Key Cell
+    const tdKey = document.createElement('td');
+    const keyGroup = document.createElement('div');
+    keyGroup.className = `pill-selector-group key-group ${isUrdu ? 'urdu-font' : ''}`;
+
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `choice-pill ${appState.officialKeys[q] === opt ? 'selected' : ''}`;
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        if (appState.officialKeys[q] === opt) {
+          delete appState.officialKeys[q];
+        } else {
+          appState.officialKeys[q] = opt;
+          tr.classList.remove('missing-key-row');
+        }
+        renderMatrixRows();
+        refreshStatusLabels();
+      });
+      keyGroup.appendChild(btn);
+    });
+    tdKey.appendChild(keyGroup);
+    tr.appendChild(tdKey);
+
+    // Candidate Marked Response Cell
+    const tdStudent = document.createElement('td');
+    const stuGroup = document.createElement('div');
+    stuGroup.className = `pill-selector-group student-group ${isUrdu ? 'urdu-font' : ''}`;
+
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `choice-pill ${appState.studentAnswers[q] === opt ? 'selected' : ''}`;
+      btn.textContent = opt;
+      btn.addEventListener('click', () => {
+        if (appState.studentAnswers[q] === opt) {
+          delete appState.studentAnswers[q];
+        } else {
+          appState.studentAnswers[q] = opt;
+        }
+        renderMatrixRows();
+        refreshStatusLabels();
+      });
+      stuGroup.appendChild(btn);
+    });
+
+    // Dedicated Skip Pill
+    const skipBtn = document.createElement('button');
+    skipBtn.type = 'button';
+    skipBtn.className = `skip-choice-pill ${appState.studentAnswers[q] === 'SKIP' ? 'selected' : ''}`;
+    skipBtn.textContent = 'Skip';
+    skipBtn.addEventListener('click', () => {
+      if (appState.studentAnswers[q] === 'SKIP') {
+        delete appState.studentAnswers[q];
+      } else {
+        appState.studentAnswers[q] = 'SKIP';
+      }
+      renderMatrixRows();
+      refreshStatusLabels();
+    });
+    stuGroup.appendChild(skipBtn);
+
+    tdStudent.appendChild(stuGroup);
+    tr.appendChild(tdStudent);
+
+    tbody.appendChild(tr);
+  }
+}
+
+function refreshStatusLabels() {
+  const keysCount = Object.keys(appState.officialKeys).length;
+  const attemptedCount = Object.values(appState.studentAnswers).filter(v => v && v !== 'SKIP').length;
+
+  document.getElementById('lblKeysCount').textContent = keysCount;
+  document.getElementById('lblAttemptedCount').textContent = attemptedCount;
+}
+
+function openBatchModal(mode) {
+  appState.batchMode = mode;
+  const modal = document.getElementById('batchEntryModal');
+  const title = document.getElementById('batchModalTitle');
+  const desc = document.getElementById('batchModalInstructions');
+  const textarea = document.getElementById('batchInputText');
+  textarea.value = '';
+
+  if (mode === 'key') {
+    title.textContent = 'Paste Official Answer Key';
+    desc.innerHTML = `Paste contiguous characters (e.g., <code>ABCDABCA...</code>) or values separated by commas/spaces to fill Official Keys 1 to ${appState.config.totalMCQs}.`;
+  } else {
+    title.textContent = 'Paste Candidate Responses';
+    desc.innerHTML = `Paste candidate responses. Use <code>S</code>, <code>SKIP</code>, or <code>-</code> for skipped/unattempted questions.`;
+  }
+
+  modal.classList.add('active');
+  textarea.focus();
+}
+
+function closeBatchModal() {
+  document.getElementById('batchEntryModal').classList.remove('active');
+}
+
+function fillSequentialPattern() {
+  const opts = getOptionsForScheme();
+  let pattern = '';
+  for (let i = 0; i < appState.config.totalMCQs; i++) {
+    pattern += opts[i % opts.length];
+  }
+  document.getElementById('batchInputText').value = pattern;
+}
+
+function normalizeInputToken(rawToken, validOpts) {
+  const t = rawToken.trim();
+  if (!t) return null;
+
+  // Direct match
+  const exact = validOpts.find(o => o.toUpperCase() === t.toUpperCase());
+  if (exact) return exact;
+
+  // Urdu character normalization (support alef variations and heh/choti yeh variants)
+  if (appState.config.charset === 'urdu') {
+    const urduMap = {
+      'ا': 'الف', 'الف': 'الف', 'A': 'الف', 'a': 'الف', '1': 'الف',
+      'ب': 'ب', 'B': 'ب', 'b': 'ب', '2': 'ب',
+      'ج': 'ج', 'C': 'ج', 'c': 'ج', '3': 'ج',
+      'د': 'د', 'D': 'د', 'd': 'د', '4': 'د',
+      'ہ': 'ہ', 'ه': 'ہ', 'E': 'ہ', 'e': 'ہ', '5': 'ہ'
+    };
+    if (urduMap[t] && validOpts.includes(urduMap[t])) {
+      return urduMap[t];
+    }
+  }
+
+  // English fallback if numeric entered (e.g. 1 -> A, 2 -> B...)
+  if (appState.config.charset === 'english') {
+    const numIdx = parseInt(t, 10);
+    if (!isNaN(numIdx) && numIdx >= 1 && numIdx <= validOpts.length) {
+      return validOpts[numIdx - 1];
+    }
+  }
+
+  // Numerical fallback if letters entered (e.g. A -> 1, B -> 2...)
+  if (appState.config.charset === 'numerical') {
+    const letterMap = { 'A': '1', 'B': '2', 'C': '3', 'D': '4', 'E': '5' };
+    const up = t.toUpperCase();
+    if (letterMap[up] && validOpts.includes(letterMap[up])) {
+      return letterMap[up];
+    }
+  }
+
+  return null;
+}
+
+function applyBatchText() {
+  const raw = document.getElementById('batchInputText').value.trim();
+  if (!raw) {
+    showNotification('Please enter input text', 'error');
+    return;
+  }
+
+  const validOpts = getOptionsForScheme();
+  let tokens = [];
+
+  if (raw.includes(',') || raw.includes(' ') || raw.includes('\n') || raw.includes('\t')) {
+    tokens = raw.split(/[\s,]+/).filter(t => t.length > 0);
+  } else {
+    tokens = Array.from(raw);
+  }
+
+  let filledCount = 0;
+  for (let i = 0; i < Math.min(tokens.length, appState.config.totalMCQs); i++) {
+    const q = i + 1;
+    const token = tokens[i].trim();
+
+    if (appState.batchMode === 'key') {
+      const match = normalizeInputToken(token, validOpts);
+      if (match) {
+        appState.officialKeys[q] = match;
+        filledCount++;
+      }
+    } else {
+      if (token.toUpperCase() === 'SKIP' || token === '-' || token === '*' || token === '0' || token.toUpperCase() === 'S') {
+        appState.studentAnswers[q] = 'SKIP';
+        filledCount++;
+      } else {
+        const match = normalizeInputToken(token, validOpts);
+        if (match) {
+          appState.studentAnswers[q] = match;
+          filledCount++;
+        }
+      }
+    }
+  }
+
+  closeBatchModal();
+  renderMatrixRows();
+  refreshStatusLabels();
+  showNotification(`Successfully populated ${filledCount} items`, 'success');
+}
+
+function markRemainingUnattempted() {
+  let count = 0;
+  for (let q = 1; q <= appState.config.totalMCQs; q++) {
+    if (!appState.studentAnswers[q]) {
+      appState.studentAnswers[q] = 'SKIP';
+      count++;
+    }
+  }
+  renderMatrixRows();
+  refreshStatusLabels();
+  showNotification(`Marked ${count} unselected questions as skipped`, 'info');
+}
+
+function simulateRealisticResponses() {
+  const opts = getOptionsForScheme();
+  for (let q = 1; q <= appState.config.totalMCQs; q++) {
+    const key = opts[Math.floor(Math.random() * opts.length)];
+    appState.officialKeys[q] = key;
+
+    const rand = Math.random();
+    if (rand < 0.75) {
+      appState.studentAnswers[q] = key;
+    } else if (rand < 0.90) {
+      const remaining = opts.filter(o => o !== key);
+      appState.studentAnswers[q] = remaining[Math.floor(Math.random() * remaining.length)];
+    } else {
+      appState.studentAnswers[q] = 'SKIP';
+    }
+  }
+
+  renderMatrixRows();
+  refreshStatusLabels();
+  showNotification(`Simulated data for all ${appState.config.totalMCQs} questions`, 'success');
+}
+
+function clearMarkingGrid() {
+  if (Object.keys(appState.officialKeys).length === 0 && Object.keys(appState.studentAnswers).length === 0) {
+    showNotification('Matrix is already empty', 'info');
+    return;
+  }
+  appState.officialKeys = {};
+  appState.studentAnswers = {};
+  renderMatrixRows();
+  refreshStatusLabels();
+  showNotification('Cleared all grid selections', 'info');
+}
+
+function triggerEvaluation() {
+  const missingKeys = [];
+  for (let q = 1; q <= appState.config.totalMCQs; q++) {
+    if (!appState.officialKeys[q]) {
+      missingKeys.push(q);
+    }
+  }
+
+  if (missingKeys.length > 0) {
+    showNotification(`Missing Official Key for ${missingKeys.length} question(s)!`, 'error');
+    
+    // Jump directly to the pagination page of the first missing key
+    const firstMissing = missingKeys[0];
+    appState.currentPage = Math.ceil(firstMissing / appState.pageSize);
+    renderPaginationStrip();
+    renderMatrixRows();
+
+    // Highlight missing rows on this page and scroll to center
+    setTimeout(() => {
+      missingKeys.forEach(mQ => {
+        const row = document.getElementById(`row-item-${mQ}`);
+        if (row) row.classList.add('missing-key-row');
+      });
+
+      const targetRow = document.getElementById(`row-item-${firstMissing}`);
+      if (targetRow) {
+        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 60);
+
+    return;
+  }
+
+  // Treat any unmarked candidate response as skipped
+  for (let q = 1; q <= appState.config.totalMCQs; q++) {
+    if (!appState.studentAnswers[q]) {
+      appState.studentAnswers[q] = 'SKIP';
+    }
+  }
+
+  let correctCount = 0;
+  let incorrectCount = 0;
+  let skippedCount = 0;
+  const itemAudits = [];
+
+  for (let q = 1; q <= appState.config.totalMCQs; q++) {
+    const master = appState.officialKeys[q];
+    const candidateChoice = appState.studentAnswers[q];
+    let status = 'unattempted';
+    let delta = 0;
+
+    if (candidateChoice === 'SKIP' || !candidateChoice) {
+      status = 'unattempted';
+      skippedCount++;
+      delta = 0;
+    } else if (candidateChoice === master) {
+      status = 'correct';
+      correctCount++;
+      delta = 1.0;
+    } else {
+      status = 'incorrect';
+      incorrectCount++;
+      delta = -appState.config.negativeMarks;
+    }
+
+    itemAudits.push({
+      question: q,
+      key: master,
+      student: candidateChoice === 'SKIP' ? '—' : candidateChoice,
+      status,
+      marksDelta: delta
+    });
+  }
+
+  const maxMarks = appState.config.totalMCQs;
+  const rawPositive = correctCount * 1.0;
+  const totalDeductions = incorrectCount * appState.config.negativeMarks;
+  const netMarks = Math.max(0, rawPositive - totalDeductions);
+  const netPercentage = maxMarks > 0 ? (netMarks / maxMarks) * 100 : 0;
+  const isPassed = netPercentage >= appState.config.passThreshold;
+
+  const attemptedCount = correctCount + incorrectCount;
+  const accuracyRate = attemptedCount > 0 ? (correctCount / attemptedCount) * 100 : 0;
+
+  appState.evaluation = {
+    maxMarks,
+    netMarks,
+    rawPositive,
+    totalDeductions,
+    netPercentage,
+    isPassed,
+    correctCount,
+    incorrectCount,
+    skippedCount,
+    attemptedCount,
+    accuracyRate,
+    itemAudits
+  };
+
+  renderAnalyticsScreen();
+  prepareStrictA4LandscapePrintableReport();
+  navigateToStage(3);
+  showNotification('Evaluation completed successfully', 'success');
+}
+
+function renderAnalyticsScreen() {
+  const ev = appState.evaluation;
+
+  document.getElementById('analyticsSubtitle').textContent = 
+    `${appState.config.candidate} (${appState.config.rollNo}) • ${appState.config.title} • ${appState.config.date}`;
+
+  const badge = document.getElementById('badgeOutcome');
+  badge.textContent = ev.isPassed ? 'PASSED' : 'NEEDS IMPROVEMENT';
+  badge.className = `status-badge ${ev.isPassed ? 'passed' : 'failed'}`;
+
+  document.getElementById('lblThresholdBadge').textContent = 
+    `Passing Threshold: ${appState.config.passThreshold}%`;
+
+  document.getElementById('lblNetPercentValue').textContent = `${ev.netPercentage.toFixed(1)}%`;
+  document.getElementById('lblScoreEquation').textContent = 
+    `Obtained ${ev.netMarks.toFixed(2)} / ${ev.maxMarks} marks (Negative Deductions: -${ev.totalDeductions.toFixed(2)})`;
+
+  const circle = document.getElementById('svgProgressPath');
+  const clamped = Math.min(100, Math.max(0, ev.netPercentage));
+  circle.setAttribute('stroke-dasharray', `${clamped.toFixed(1)}, 100`);
+  circle.style.stroke = ev.isPassed ? 'var(--accent-emerald)' : 'var(--accent-rose)';
+
+  document.getElementById('cardValMarks').innerHTML = 
+    `${ev.netMarks.toFixed(2)} <span style="font-size: 1.1rem; color: var(--text-muted); font-weight: 500;">/ ${ev.maxMarks}</span>`;
+  document.getElementById('cardMetaTotalMarks').textContent = `Total Marks: ${ev.maxMarks}`;
+
+  document.getElementById('cardValCorrect').textContent = ev.correctCount;
+  document.getElementById('cardMetaAccuracy').textContent = `Accuracy: ${ev.accuracyRate.toFixed(1)}% of attempted`;
+
+  document.getElementById('cardValIncorrect').textContent = ev.incorrectCount;
+  document.getElementById('cardMetaDeductions').textContent = `Deductions: -${ev.totalDeductions.toFixed(2)}`;
+
+  document.getElementById('cardValSkipped').textContent = ev.skippedCount;
+  const attRate = (ev.attemptedCount / appState.config.totalMCQs) * 100;
+  document.getElementById('cardMetaAttempt').textContent = `Attempt Rate: ${attRate.toFixed(1)}%`;
+
+  renderAuditItemsTable();
+}
+
+function setAuditFilter(filter) {
+  appState.activeFilter = filter;
+  document.querySelectorAll('.audit-filter-bar .filter-pill-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.getAttribute('data-filter') === filter);
+  });
+  renderAuditItemsTable();
+}
+
+function renderAuditItemsTable() {
+  const tbody = document.getElementById('auditTableBody');
+  tbody.innerHTML = '';
+
+  const ev = appState.evaluation;
+  if (!ev) return;
+
+  const isUrdu = appState.config.charset === 'urdu';
+  const filtered = ev.itemAudits.filter(item => {
+    if (appState.activeFilter === 'correct') return item.status === 'correct';
+    if (appState.activeFilter === 'incorrect') return item.status === 'incorrect';
+    if (appState.activeFilter === 'unattempted') return item.status === 'unattempted';
+    return true;
+  });
+
+  filtered.forEach(item => {
+    const tr = document.createElement('tr');
+    tr.className = 'matrix-row';
+
+    let tagHtml = '';
+    let deltaHtml = '';
+
+    if (item.status === 'correct') {
+      tagHtml = '<span class="audit-tag correct">✓ Correct</span>';
+      deltaHtml = '<span style="color: var(--accent-emerald); font-weight: 700;">+1.00</span>';
+    } else if (item.status === 'incorrect') {
+      tagHtml = '<span class="audit-tag incorrect">✗ Incorrect</span>';
+      deltaHtml = `<span style="color: var(--accent-rose); font-weight: 700;">-${appState.config.negativeMarks.toFixed(2)}</span>`;
+    } else {
+      tagHtml = '<span class="audit-tag unattempted">○ Skipped</span>';
+      deltaHtml = '<span style="color: var(--text-muted); font-weight: 600;">0.00</span>';
+    }
+
+    tr.innerHTML = `
+      <td style="text-align: center;"><span class="q-number-badge">${item.question}</span></td>
+      <td style="text-align: center; font-weight: 700;" class="${isUrdu ? 'urdu-font' : ''}">${item.key}</td>
+      <td style="text-align: center; font-weight: 600;" class="${isUrdu ? 'urdu-font' : ''}">${item.student}</td>
+      <td style="text-align: center;">${tagHtml}</td>
+      <td style="text-align: center;">${deltaHtml}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function prepareStrictA4LandscapePrintableReport() {
+  const ev = appState.evaluation;
+  if (!ev) return;
+
+  const now = new Date();
+  const timestampStr = `${now.toLocaleDateString()} ${now.toLocaleTimeString()}`;
+
+  document.getElementById('pRepStudent').textContent = appState.config.candidate || '—';
+  document.getElementById('pRepRollNo').textContent = appState.config.rollNo || 'N/A';
+  document.getElementById('pRepTitle').textContent = appState.config.title || '—';
+  document.getElementById('pRepDate').textContent = appState.config.date || '—';
+
+  // 11-Cell Horizontal Metric Ribbon
+  document.getElementById('pRepTotalQ').textContent = appState.config.totalMCQs;
+  document.getElementById('pRepAttempted').textContent = ev.attemptedCount;
+  document.getElementById('pRepCorrect').textContent = ev.correctCount;
+  document.getElementById('pRepIncorrect').textContent = ev.incorrectCount;
+  document.getElementById('pRepSkipped').textContent = ev.skippedCount;
+  document.getElementById('pRepAccuracy').textContent = `${ev.accuracyRate.toFixed(1)}%`;
+  document.getElementById('pRepMaxMarks').textContent = ev.maxMarks;
+  document.getElementById('pRepMarksObtained').textContent = ev.netMarks.toFixed(2);
+  document.getElementById('pRepDeductions').textContent = `-${ev.totalDeductions.toFixed(2)}`;
+  document.getElementById('pRepNetPercent').textContent = `${ev.netPercentage.toFixed(1)}%`;
+
+  const statusEl = document.getElementById('pRepStatus');
+  statusEl.textContent = ev.isPassed ? 'PASSED' : 'NEEDS IMPROVEMENT';
+  statusEl.style.color = ev.isPassed ? '#059669' : '#E11D48';
+
+  document.getElementById('pRepFooterTimestamp').textContent = timestampStr;
+  const authCode = Math.abs((appState.config.title + appState.config.candidate + ev.netMarks).split('').reduce((acc, c) => acc + c.charCodeAt(0), 7119) * 8191);
+  document.getElementById('pRepVerificationCode').textContent = `${authCode.toString(16).toUpperCase()}-TC`;
+
+  // Auto-Scaling Columns for strict landscape boundary fit with zero spillover
+  const totalMCQs = appState.config.totalMCQs;
+  let numCols = 5;
+  let fontSize = '8px';
+  let paddingY = '1px';
+  let paddingX = '2px';
+  let lineH = '1.1';
+
+  if (totalMCQs <= 50) {
+    numCols = 5;
+    fontSize = '8px';
+    paddingY = '1px';
+    paddingX = '2px';
+    lineH = '1.1';
+  } else if (totalMCQs <= 100) {
+    numCols = 8;
+    fontSize = '7px';
+    paddingY = '1px';
+    paddingX = '2px';
+    lineH = '1.05';
+  } else if (totalMCQs <= 200) {
+    numCols = 12;
+    fontSize = '6.2px';
+    paddingY = '0.5px';
+    paddingX = '1px';
+    lineH = '1.0';
+  } else if (totalMCQs <= 350) {
+    numCols = 16;
+    fontSize = '5.5px';
+    paddingY = '0.3px';
+    paddingX = '0.8px';
+    lineH = '0.98';
+  } else {
+    // 351 to 500 MCQs
+    numCols = 22;
+    fontSize = '5px';
+    paddingY = '0.2px';
+    paddingX = '0.5px';
+    lineH = '0.95';
+  }
+
+  const container = document.getElementById('printMatrixGrid');
+  container.innerHTML = '';
+  container.style.gridTemplateColumns = `repeat(${numCols}, 1fr)`;
+
+  const perCol = Math.ceil(totalMCQs / numCols);
+
+  for (let col = 0; col < numCols; col++) {
+    const startQ = col * perCol + 1;
+    const endQ = Math.min((col + 1) * perCol, totalMCQs);
+
+    if (startQ <= totalMCQs) {
+      const table = document.createElement('table');
+      table.className = 'print-column-table';
+      table.style.fontSize = fontSize;
+      table.style.lineHeight = lineH;
+
+      table.innerHTML = `
+        <thead>
+          <tr>
+            <th style="padding: ${paddingY} ${paddingX}; width: 28%;">Q#</th>
+            <th style="padding: ${paddingY} ${paddingX}; width: 24%;">Key</th>
+            <th style="padding: ${paddingY} ${paddingX}; width: 24%;">Ans</th>
+            <th style="padding: ${paddingY} ${paddingX}; width: 24%;">Res</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      `;
+
+      const tbody = table.querySelector('tbody');
+
+      for (let q = startQ; q <= endQ; q++) {
+        const item = ev.itemAudits[q - 1];
+        const tr = document.createElement('tr');
+
+        let symbol = '—';
+        if (item.status === 'correct') {
+          tr.className = 'pr-pass';
+          symbol = '✓';
+        } else if (item.status === 'incorrect') {
+          tr.className = 'pr-fail';
+          symbol = '✗';
+        } else {
+          tr.className = 'pr-skip';
+          symbol = '○';
+        }
+
+        tr.innerHTML = `
+          <td style="padding: ${paddingY} ${paddingX};"><strong>${item.question}</strong></td>
+          <td style="padding: ${paddingY} ${paddingX};">${item.key}</td>
+          <td style="padding: ${paddingY} ${paddingX};">${item.student}</td>
+          <td style="padding: ${paddingY} ${paddingX};">${symbol}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+
+      container.appendChild(table);
+    }
+  }
+}
+
+// Ensure printable scorecard updates automatically before printing
+window.addEventListener('beforeprint', () => {
+  if (appState.evaluation) {
+    prepareStrictA4LandscapePrintableReport();
+  }
+});
+
+function launchPrintReport() {
+  if (!appState.evaluation) {
+    showNotification('Please evaluate the assessment first', 'error');
+    return;
+  }
+  prepareStrictA4LandscapePrintableReport();
+  setTimeout(() => {
+    window.print();
+  }, 40);
+}
+</script>
+</body>
+</html>
